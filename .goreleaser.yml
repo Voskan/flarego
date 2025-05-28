@@ -1,0 +1,18 @@
+project_name: flarego
+
+builds:
+  - id: flarego
+    main: ./cmd/flarego/main.go
+    binary: flarego
+  - id: flarego-agent
+    main: ./cmd/flarego-agent/main.go
+    binary: flarego-agent
+  - id: flarego-gateway
+    main: ./cmd/flarego-gateway/main.go
+    binary: flarego-gateway
+
+archives:
+  - id: default
+    builds: [flarego, flarego-agent, flarego-gateway]
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
