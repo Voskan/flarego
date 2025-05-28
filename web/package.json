@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx",
-    "format": "prettier --write src"
+    "format": "prettier --write src",
+    "gen": "npx protoc   --proto_path=internal/proto   --plugin=protoc-gen-es=./node_modules/.bin/protoc-gen-es   --plugin=protoc-gen-connect-es=./node_modules/.bin/protoc-gen-connect-es   --es_out=import_extension=ts:./web/src/gen   --connect-es_out=import_extension=ts:./web/src/gen   internal/proto/gateway.proto"
   },
   "dependencies": {
     "@bufbuild/connect": "^0.13.0",

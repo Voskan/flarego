@@ -13,8 +13,9 @@
 
 import { createConnectTransport } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
-import { GatewayService } from "../gen/agentpb/gateway_connect";
-import { FlamegraphChunk } from "../gen/agentpb/gateway_pb";
+import { GatewayService } from "../gen/gateway_connect";
+import { FlamegraphChunk } from "../gen/gateway_pb";
+import { Empty } from "@bufbuild/protobuf";
 
 interface ClientOptions {
   gatewayURL: string; // e.g., "https://localhost:4317"
@@ -44,12 +45,11 @@ export class FlareGoClient {
    * streamFlamegraphs yields Uint8Array payloads as they arrive from the
    * gateway.  The caller converts each to string/JSON as needed.
    */
-  async *streamFlamegraphs(): AsyncGenerator<Uint8Array> {
-    const stream = this.client.stream({});
-    for await (const chunk of stream) {
-      if (chunk instanceof FlamegraphChunk) {
-        yield chunk.payload;
-      }
+  async streamFlamegraphs(): Promise<void> {
+    async function* emptyStream() {
+      yield new FlamegraphChunk({ payload: new Uint8Array([1, 2, 3]) }); // your data here
     }
+    await this.client.stream(emptyStream());
+    // No data to receive from server; server returns a single Empty
   }
 }
