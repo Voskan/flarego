@@ -20,6 +20,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/Voskan/flarego/internal/logging"
 	"github.com/Voskan/flarego/pkg/flamegraph"
@@ -93,9 +94,9 @@ func initLogger() error {
         cfg = zap.NewDevelopmentConfig()
     }
     // Add timestamp in RFC3339 for easy copy‑paste.
-    cfg.EncoderConfig.EncodeTime = zap.TimeEncoder(func(t time.Time, enc zap.PrimitiveArrayEncoder) {
+    cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
         enc.AppendString(t.Format(time.RFC3339))
-    })
+    }
 
     logger, err := cfg.Build()
     if err != nil {
