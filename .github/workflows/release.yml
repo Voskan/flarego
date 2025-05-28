@@ -35,7 +35,7 @@ jobs:
 
       - name: Login to GHCR
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" \
+          echo "${{ secrets.GIT_TOKEN }}" \
             | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Install GoReleaser
@@ -44,6 +44,6 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
           DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
