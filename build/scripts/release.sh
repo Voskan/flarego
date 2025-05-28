@@ -11,7 +11,7 @@
 # Requirements:
 #   • goreleaser installed (v1.23+) and on $PATH
 #   • docker buildx (for multi‐arch images)
-#   • $GITHUB_TOKEN set with repo:write & packages:write scopes (for goreleaser)
+#   • $GIT_TOKEN set with repo:write & packages:write scopes (for goreleaser)
 #   • $DOCKERHUB_USER / $DOCKERHUB_PASS for docker login (optional)
 #
 # The script performs:
@@ -72,7 +72,7 @@ echo "[release] Running goreleaser"
 if $DRY_RUN; then
   goreleaser release --snapshot --clean --skip-publish --rm-dist
 else
-  : "${GITHUB_TOKEN:?GITHUB_TOKEN not set}"
+  : "${GIT_TOKEN:?GIT_TOKEN not set}"
   goreleaser release --clean --rm-dist
 fi
 
