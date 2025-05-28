@@ -6,6 +6,9 @@ builds:
     binary: flarego
     flags:
       - -tags=cli
+    goarch:
+      - amd64
+      - arm64
   - id: flarego-agent
     main: ./cmd/flarego-agent/main.go
     binary: flarego-agent
