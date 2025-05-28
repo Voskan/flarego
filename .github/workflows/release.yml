@@ -42,7 +42,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
-          args: release --clean --rm-dist
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
