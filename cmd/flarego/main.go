@@ -6,8 +6,5 @@
 package main
 
 func main() {
-    // Call the root command's Execute function, handling any errors.
-    if err := main.Execute(); err != nil {
-        println(err.Error())
-    }
+    Execute()
 }
