@@ -121,9 +121,11 @@ func (g *grpcExporter) connect(ctx context.Context) error {
     // Default TLS unless disabled by Opts.
     hasCreds := false
     for _, o := range dialOpts {
-        if _, ok := o.(grpc.CredsCallOption); ok {
-            hasCreds = true
-            break
+        if creds, ok := o.(grpc.DialOption); ok {
+            if _, ok := creds.(credentials.TransportCredentials); ok {
+                hasCreds = true
+                break
+            }
         }
     }
     if !hasCreds {

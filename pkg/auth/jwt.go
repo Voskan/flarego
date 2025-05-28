@@ -76,7 +76,7 @@ func (v *Verifier) ParseAndVerify(tokenStr string) (jwt.MapClaims, error) {
             return nil, ErrInvalidToken
         }
         return v.secret, nil
-    }, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}), jwt.WithClock(jwt.ClockFunc(v.clock)))
+    }, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
     if err != nil {
         if errors.Is(err, jwt.ErrTokenExpired) {
             return nil, ErrExpiredToken

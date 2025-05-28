@@ -80,7 +80,7 @@ func loadGatewayConfig() (gateway.Config, gateway.HTTPConfig) {
 
     // TLS handled by gateway.LoadConfig, but honour flags here too.
     if *tlsCert != "" && *tlsKey != "" {
-        gwCfg.TLSCertPath = *tlsCert // new field added in server.Config for late binding
+        gwCfg.TLSCertPath = *tlsCert
         gwCfg.TLSKeyPath = *tlsKey
     }
 

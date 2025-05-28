@@ -69,19 +69,3 @@ func (b *Builder) Reset() {
 	defer b.mu.Unlock()
 	b.root = New(b.root.Name)
 }
-
-// deepCopy осуществляет рекурсивное копирование Frame без мьютексов.
-func deepCopy(src *Frame) *Frame {
-	if src == nil {
-		return nil
-	}
-	dst := &Frame{
-		Name:     src.Name,
-		Value:    src.Value,
-		Children: make(map[string]*Frame, len(src.Children)),
-	}
-	for k, child := range src.Children {
-		dst.Children[k] = deepCopy(child)
-	}
-	return dst
-}

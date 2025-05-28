@@ -17,8 +17,10 @@ import (
 	agentpb "github.com/Voskan/flarego/internal/proto"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 // Config parameterises a Gateway Server.
@@ -28,6 +30,8 @@ type Config struct {
     AuthToken    string        // optional static bearer token ("" means open)
     RetentionDur time.Duration // how long to keep a chunk in memory (0 => 15m)
     MaxClients   int           // soft cap for connected subscribers
+    TLSCertPath  string        // path to TLS certificate (PEM)
+    TLSKeyPath   string        // path to TLS key (PEM)
 }
 
 // Server implements the generated gRPC service and fans‑out chunks to all
@@ -41,6 +45,7 @@ type Server struct {
     subsMu  sync.RWMutex
     subs    map[chan []byte]struct{}
     grpcSrv *grpc.Server
+    jwt     jwtHelper
 }
 
 // New returns a ready‑to‑serve Gateway.  The caller must invoke ListenAndServe.
@@ -87,12 +92,12 @@ func (s *Server) Stream(stream agentpb.GatewayService_StreamServer) error {
     if s.cfg.AuthToken != "" {
         md, ok := metadata.FromIncomingContext(stream.Context())
         if !ok || len(md.Get("authorization")) == 0 {
-            return grpc.Errorf(grpc.Code(grpc.Unauthenticated), "missing auth token")
+            return status.Error(codes.Unauthenticated, "missing auth token")
         }
         tok := md.Get("authorization")[0]
         expected := "Bearer " + s.cfg.AuthToken
         if tok != expected {
-            return grpc.Errorf(grpc.Code(grpc.PermissionDenied), "invalid auth token")
+            return status.Error(codes.PermissionDenied, "invalid auth token")
         }
     }
 
@@ -100,7 +105,7 @@ func (s *Server) Stream(stream agentpb.GatewayService_StreamServer) error {
     for {
         chunk, err := stream.Recv()
         if err != nil {
-            if grpc.Code(err) == grpc.Canceled || grpc.Code(err) == grpc.Unavailable {
+            if status.Code(err) == codes.Canceled || status.Code(err) == codes.Unavailable {
                 return nil // client disconnected
             }
             logging.Sugar().Warnw("stream recv", "err", err)

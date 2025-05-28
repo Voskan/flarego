@@ -7,8 +7,8 @@
 import React, { useState } from "react";
 import { useTraceStream, ConnectionState } from "../hooks/useTraceStream";
 import { FlameGraphCanvas } from "../components/FlameGraphCanvas";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
 
 interface DashboardProps {
   defaultGatewayURL?: string;

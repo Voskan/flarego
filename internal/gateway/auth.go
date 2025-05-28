@@ -18,7 +18,9 @@ import (
 
 	"github.com/Voskan/flarego/pkg/auth"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 // JWTConfig optionally enables JWT auth.
@@ -101,8 +103,8 @@ func (s *Server) HTTPAuthMiddleware(next http.Handler) http.Handler {
 
 // error definitions --------------------------------------------------------
 var (
-    ErrUnauthenticated = grpc.Errorf(grpc.Code(grpc.Unauthenticated), "missing auth token")
-    ErrInvalidToken    = grpc.Errorf(grpc.Code(grpc.PermissionDenied), "invalid auth token")
+    ErrUnauthenticated = status.Error(codes.Unauthenticated, "missing auth token")
+    ErrInvalidToken    = status.Error(codes.PermissionDenied, "invalid auth token")
 )
 
 // internal JWT helper ------------------------------------------------------

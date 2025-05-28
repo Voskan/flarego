@@ -14,6 +14,7 @@ import (
 	"github.com/Voskan/flarego/internal/metrics"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/zap"
 )
 
 // HTTPConfig controls listener behaviour.

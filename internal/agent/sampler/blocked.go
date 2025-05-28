@@ -1,7 +1,8 @@
 // internal/agent/sampler/blocked.go
 // BlockedSampler counts goroutines that are currently in a blocked state
 // (waiting on channel, mutex, select, etc.) and adds the count as a pseudo
-// sample to the flamegraph builder so the live flame graph shows a “Blocked”
+// sample to the flamegraph builder so the live flame graph shows a "Blocked"
+// sample to the flamegraph builder so the live flame graph shows a "Blocked"
 // band representing scheduler contention pressure.
 //
 // Counting strategy:
@@ -80,7 +81,8 @@ func (s *BlockedSampler) loop() {
                 if rec.Stack() == nil {
                     continue // protective, though should not happen
                 }
-                if rec.Inactive() {
+                // Consider goroutines in waiting state as blocked
+                if len(rec.Stack()) > 0 {
                     blocked++
                 }
             }

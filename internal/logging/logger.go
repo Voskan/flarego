@@ -44,6 +44,6 @@ func Sugar() *zap.SugaredLogger { return Logger().Sugar() }
 
 // Initialised reports whether a non-nop logger has been set.
 func Initialised() bool {
-    _, ok := l.Load().(*zap.Logger)
-    return ok && l.Load() != nil && l.Load() != zap.NewNop()
+    logger := l.Load()
+    return logger != nil && logger != zap.NewNop()
 }

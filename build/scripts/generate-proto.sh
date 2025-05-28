@@ -20,7 +20,11 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PROTO_DIR="${ROOT_DIR}/internal/proto"
-OUT_DIR="${PROTO_DIR}"
+OUT_DIR="${ROOT_DIR}/internal/proto"
+
+echo "root dir: $ROOT_DIR"
+echo "proto dir: $PROTO_DIR"
+echo "out dir: $OUT_DIR"
 
 PROTOC_BIN="${PROTOC:-protoc}"
 GO_PLUGIN_BIN="${PROTOC_GEN_GO:-protoc-gen-go}"

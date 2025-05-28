@@ -19,7 +19,7 @@ import (
 
 // Config duplicates fields from internal/agent.Collector Config plus exporter
 // and encoder choices.
-type Config struct {
+type ConfigSampler struct {
     // Sampling -------------------------------------------
     Hz int `mapstructure:"hz"` // default 1000
 
@@ -36,8 +36,8 @@ type Config struct {
 }
 
 // DefaultConfig returns sensible defaults.
-func DefaultConfig() Config {
-    return Config{
+func DefaultConfig() ConfigSampler {
+    return ConfigSampler{
         Hz:          1000,
         ExportEvery: 500 * time.Millisecond,
         Encoder:     "json",
@@ -47,7 +47,7 @@ func DefaultConfig() Config {
 
 // Load reads configuration from env + optional file.  envPrefix e.g. "FLAREGO"
 // transforms AGENT_HZ → Hz.  If filePath is empty only env vars are used.
-func Load(filePath, envPrefix string) Config {
+func Load(filePath, envPrefix string) ConfigSampler {
     cfg := DefaultConfig()
 
     v := viper.New()
