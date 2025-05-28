@@ -4,8 +4,6 @@ builds:
   - id: flarego
     main: ./cmd/flarego/main.go
     binary: flarego
-    flags:
-      - -tags=cli
     goarch:
       - amd64
       - arm64
