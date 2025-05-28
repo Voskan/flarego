@@ -3,10 +3,6 @@
 // initialisation (logger, config file, colour output) and adds top‑level
 // sub‑commands located in sibling files (attach.go, record.go, replay.go,
 // version.go).
-//
-// Build‑tag `cli` allows excluding the CLI from tiny agent-only builds.
-//go:build cli
-// +build cli
 
 package main
 
