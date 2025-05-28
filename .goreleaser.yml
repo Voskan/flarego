@@ -4,6 +4,8 @@ builds:
   - id: flarego
     main: ./cmd/flarego/main.go
     binary: flarego
+    flags:
+      - -tags=cli
   - id: flarego-agent
     main: ./cmd/flarego-agent/main.go
     binary: flarego-agent
