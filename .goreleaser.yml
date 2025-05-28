@@ -4,9 +4,14 @@ builds:
   - id: flarego
     main: ./cmd/flarego/main.go
     binary: flarego
+    flags:
+      - -tags=cli
+    goos:
+      - linux
+      - windows
     goarch:
-      - amd64
       - arm64
+      - arm
   - id: flarego-agent
     main: ./cmd/flarego-agent/main.go
     binary: flarego-agent

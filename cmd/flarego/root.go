@@ -1,9 +1,13 @@
+//go:build cli
+// +build cli
+
 // cmd/flarego/root.go
 // Root command for the `flarego` CLI. It wires common flags, global
 // initialisation (logger, config file, colour output) and adds top‑level
 // sub‑commands located in sibling files (attach.go, record.go, replay.go,
 // version.go).
 
+// Build‑tag `cli` allows excluding the CLI from tiny agent-only builds.
 package main
 
 import (
