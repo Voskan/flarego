@@ -13,7 +13,7 @@
 
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
-import flamegraph from "d3-flame-graph";
+import { flamegraph } from "d3-flame-graph";
 import "d3-flame-graph/dist/d3-flamegraph.css";
 
 export interface FlameGraphCanvasProps {
@@ -38,7 +38,7 @@ export const FlameGraphCanvas: React.FC<FlameGraphCanvasProps> = ({
   // Initialise once.
   useEffect(() => {
     if (!containerRef.current) return;
-    const fg = flamegraph.flamegraph();
+    const fg = flamegraph();
     fg.onClick((d: any) => {
       if (onNodeClick) onNodeClick(d.data.name, d.data.value);
     });
