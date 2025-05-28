@@ -12,7 +12,6 @@
 package plugins
 
 import (
-	"errors"
 	"plugin"
 	"sync"
 )
@@ -73,9 +72,6 @@ func ByKind(k Kind) []Plugin {
 // plugins.Register() in its init() function.  On unsupported platforms or if
 // the plugin Open fails, an error is returned.
 func LoadShared(path string) error {
-    if plugin.Open == nil {
-        return errors.New("plugins: Go plugin loading not supported on this platform")
-    }
     _, err := plugin.Open(path)
     return err
 }
