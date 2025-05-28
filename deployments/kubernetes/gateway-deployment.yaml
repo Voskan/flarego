@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flarego-gateway
+  labels:
+    app: flarego
+    component: gateway
+spec:
+  replicas: 1 # adjust according to HA needs
+  selector:
+    matchLabels:
+      app: flarego
+      component: gateway
+  template:
+    metadata:
+      labels:
+        app: flarego
+        component: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: ghcr.io/flarego/gateway:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4317 # gRPC ingest
+            - containerPort: 8080 # HTTP + WebSocket + /metrics
+          env:
+            - name: FLAREGO_GW_LISTEN
+              value: ":4317"
+            - name: FLAREGO_GW_HTTP_LISTEN
+              value: ":8080"
+            - name: FLAREGO_GW_RETENTION
+              value: "15m"
+            - name: FLAREGO_GW_REDIS_ADDR
+              value: "redis:6379"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      restartPolicy: Always

@@ -1,0 +1,78 @@
+// internal/proto/agent.proto
+// RPC contract for control‐plane communication *from* the gateway *to* agents.
+// In FlareGo v0.1 agents are largely autonomous (they push flamegraphs and do
+// not await commands), but exposing this service early allows future features
+// such as remote sampler tuning, version upgrade orchestration and health
+// checks without breaking backward compatibility.
+//
+// Design principles:
+//   • Keep messages minimal – only what is required for handshake and basic
+//     ping/pong.  Fine‑grained control commands can be added with new RPCs or
+//     oneof fields in ControlRequest.
+//   • Streaming is unidirectional gateway→agent so that the gateway can push
+//     config changes instantly while the agent needs only to ACK.
+//   • Field numbers are frozen once released.  Reserve ranges for internal
+//     use (100‑199) and experimental (200‑299).
+syntax = "proto3";
+
+package agentpb;
+
+option go_package = "github.com/Voskan/flarego/internal/proto;agentpb";
+
+import "google/protobuf/empty.proto";
+
+// AgentInfo is sent by the agent once on connection so the gateway can label
+// metrics and UI panels.
+message AgentInfo {
+  string id        = 1; // ULID string, unique per process start
+  string hostname  = 2;
+  uint32 pid       = 3;
+  string version   = 4; // FlareGo agent version string
+  repeated string tags = 5; // arbitrary key=value labels
+}
+
+// Heartbeat keeps connection alive; payload is optional runtime stats to help
+// ops dashboards without scraping Prom.
+message Heartbeat {
+  uint64 ts_unix_ms = 1; // sender wall clock for latency calc
+  uint32 goroutines = 2; // runtime.NumGoroutine()
+  uint64 heap_bytes = 3; // runtime.MemStats.Alloc
+}
+
+// ControlRequest allows the gateway to instruct agent to change behaviour.
+message ControlRequest {
+  oneof cmd {
+    AdjustSamplingRate adjust_sampling = 1;
+    RequestSnapshot    request_snapshot = 2;
+  }
+}
+
+message AdjustSamplingRate { uint32 hz = 1; }
+
+// RequestSnapshot asks the agent to immediately send a flamegraph chunk (e.g.,
+// for UI “Refresh now” button).
+message RequestSnapshot { google.protobuf.Empty _ = 1; }
+
+// ControlResponse is returned by agent to ACK or NACK commands.
+message ControlResponse {
+  bool ok            = 1;
+  string error_msg   = 2; // non‑empty when ok==false
+}
+
+// AgentService is implemented by *agents*; gateway acts as the client.
+service AgentService {
+  // Handshake opens a bidirectional stream: first message **from** agent must
+  // be AgentInfo; afterwards gateway can push ControlRequest, agent responds
+  // with ControlResponse.  Agent may also periodically send Heartbeat.
+  rpc Handshake(stream AgentEnvelope) returns (stream ControlRequest);
+}
+
+// AgentEnvelope wraps the possible upstream messages so the method can stay a
+// single stream.
+message AgentEnvelope {
+  oneof msg {
+    AgentInfo info       = 1;
+    Heartbeat heartbeat  = 2;
+    ControlResponse ack  = 3;
+  }
+}

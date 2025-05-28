@@ -1,0 +1,29 @@
+// internal/proto/gateway.proto
+// This schema defines the gRPC contract between the in‑process FlareGo agent
+// and the central gateway.  The protocol is intentionally minimal in v0.1:
+// agents stream raw flame‑graph JSON frames; the gateway may respond with an
+// optional acknowledgement or future control messages.  Keeping the payload as
+// opaque bytes avoids frequent schema churn on the hot path.
+
+syntax = "proto3";
+
+package agentpb;
+
+option go_package = "github.com/Voskan/flarego/internal/proto;agentpb";
+
+import "google/protobuf/empty.proto";
+
+// FlamegraphChunk carries one compressed or plain JSON blob produced by the
+// agent's flamegraph.Builder.  Compression (gzip, zstd) is negotiated via the
+// gRPC 'content‑encoding' header – transparent to this schema.
+message FlamegraphChunk {
+  bytes payload = 1;
+}
+
+// GatewayService is implemented by the gateway; agents establish a
+// bidirectional stream so the server can send control messages in future (e.g.
+// sampling‑rate adjustments).  For v0.1 the server replies with an Empty upon
+// stream closure.
+service GatewayService {
+  rpc Stream(stream FlamegraphChunk) returns (google.protobuf.Empty);
+}

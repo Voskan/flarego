@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: flarego-agent
+  labels:
+    app: flarego
+    component: agent
+spec:
+  selector:
+    matchLabels:
+      app: flarego
+      component: agent
+  template:
+    metadata:
+      labels:
+        app: flarego
+        component: agent
+    spec:
+      containers:
+        - name: agent
+          image: ghcr.io/flarego/agent:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GATEWAY
+              value: "flarego-gateway:4317"
+            - name: HZ
+              value: "400"
+          args:
+            - "--gateway"
+            - "flarego-gateway:4317"
+            - "--hz"
+            - "400"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          securityContext:
+            runAsUser: 65532 # nonroot
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      restartPolicy: Always

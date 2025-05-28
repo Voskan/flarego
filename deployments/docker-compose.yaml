@@ -1,0 +1,81 @@
+version: "3.9"
+
+# deployments/docker-compose.yaml
+
+# -----------------------------------------------------------------------------
+# Opinionated development stack for FlareGo consisting of:
+# • Redis (optional) – shared retention cache for HA or page reloads.
+# • Gateway          – gRPC + HTTP/WebSocket front‑door + embedded UI.
+# • Agent            – self‑sampling instance to generate live data.
+# • Demo App         – tiny Go program that allocates goroutines so you can
+#   see flamegraphs immediately (optional, can be removed).
+#
+# The compose file is **not** tuned for production: there is no persistence,
+# logging driver, resource limits or TLS.  It’s meant for local hacking,
+# screenshots and quick PoCs.
+# -----------------------------------------------------------------------------
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: flarego-redis
+    command:
+      - redis-server
+      - "--save"
+      - ""
+      - "--appendonly"
+      - "no"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  gateway:
+    image: ghcr.io/flarego/gateway:latest # you may `docker-compose build` to use local source
+    container_name: flarego-gateway
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      FLAREGO_GW_LISTEN: ":4317"
+      FLAREGO_GW_HTTP_LISTEN: ":8080"
+      FLAREGO_GW_RETENTION: "15m"
+      FLAREGO_GW_REDIS_ADDR: "redis:6379"
+    ports:
+      - "4317:4317" # gRPC OTLP‑like ingest
+      - "8080:8080" # UI + WebSocket + /metrics
+
+  agent:
+    image: ghcr.io/flarego/agent:latest
+    container_name: flarego-agent
+    depends_on:
+      - gateway
+    environment:
+      GATEWAY: "gateway:4317"
+      HZ: "400"
+    command:
+      - /usr/bin/flarego-agent
+      - --gateway
+      - gateway:4317
+      - --hz
+      - "400"
+
+  demo-app:
+    build:
+      context: ../examples/basic
+      dockerfile: Dockerfile
+    container_name: flarego-demo
+    depends_on:
+      - agent
+    environment:
+      WORKLOAD: "medium"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+networks:
+  default:
+    name: flarego-net

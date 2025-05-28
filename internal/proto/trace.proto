@@ -1,0 +1,53 @@
+// internal/proto/trace.proto
+// Canonical schema describing low‑level runtime events exchanged between
+// FlareGo components (future versions may stream this in addition to aggregated
+// flamegraph chunks).  The message structure mirrors pkg/trace.Event so that
+// zero‑copy mapping is straightforward.
+//
+// Notes for maintainers:
+//   • Field numbers are frozen – never reuse.
+//   • All numeric types use fixed‑width unsigned/signed integers to minimise
+//     ambiguity across languages.
+//   • No package‑level options besides go_package to keep imports clean.
+
+syntax = "proto3";
+
+package agentpb;
+
+option go_package = "github.com/Voskan/flarego/internal/proto;agentpb";
+
+// EventType matches constants in pkg/trace.EventType.
+enum EventType {
+  // Unknown / reserved
+  ET_UNSPECIFIED = 0;
+
+  // 1–999 are kept in sync with Go runtime/trace; subset we care about.
+  ET_GO_CREATE  = 1;  // goroutine creation
+  ET_GO_END     = 2;  // goroutine finished
+  ET_GO_SCHED   = 3;  // goroutine scheduled
+  ET_GO_BLOCKED = 4;  // goroutine blocked
+  ET_GC_START   = 5;  // GC cycle start
+  ET_GC_END     = 6;  // GC end
+
+  // FlareGo synthetic events (1000+)
+  ET_HEAP_SAMPLE = 1000;
+  ET_BLOCKED_CNT = 1001;
+}
+
+// Event is a single runtime record.
+message Event {
+  uint64 ts    = 1; // monotonic ns since process start
+  uint64 g     = 2; // goroutine id (0 if N/A)
+  int32  p     = 3; // processor id (-1 if unknown)
+  EventType type  = 4;
+  sint64 value = 5; // payload (bytes, ns, count) depending on type
+  repeated uint64 stack = 6; // PCs root→leaf (may be empty)
+}
+
+// TraceBatch bundles events for efficient transport.
+message TraceBatch {
+  repeated Event events = 1;
+  // wall_time is optional absolute timestamp (RFC3339) of first event, useful
+  // for correlation across hosts.  Empty string implies sender’s clock.
+  string wall_time = 2;
+}

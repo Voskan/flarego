@@ -1,0 +1,52 @@
+# build/Dockerfile.agent
+# -----------------------------------------------------------------------------
+# Multi‑stage Dockerfile for the standalone FlareGo **agent** binary.  The final
+# image is a scratch‑based, <10 MB minimal container containing just the static
+# Go binary and the CA certificates so it can TLS to the gateway.
+#
+# Build arguments:
+#   VERSION  — binary version string embedded via -ldflags (default "dev")
+#   COMMIT   — git commit hash for provenance
+#   DATE     — build date (RFC‑3339)
+#
+# Example local build:
+#   docker build -f build/Dockerfile.agent -t flarego/agent:latest \
+#        --build-arg VERSION=$(git describe --tags) \
+#        --build-arg COMMIT=$(git rev-parse --short HEAD) \
+#        --build-arg DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") .
+# -----------------------------------------------------------------------------
+
+######################## 1. Build stage #######################################
+FROM golang:1.24-alpine AS builder
+
+ARG VERSION=dev
+ARG COMMIT=unknown
+ARG DATE=unknown
+
+# Install git for go modules that use CGO=0 Git checkout (rare) and ca-cert.
+RUN apk add --no-cache git make ca-certificates
+
+WORKDIR /src
+COPY go.* ./
+RUN go mod download
+COPY . .
+
+# Build static binary.
+ENV CGO_ENABLED=0
+RUN go build -v -trimpath -o /out/flarego-agent \
+    -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" \
+    ./cmd/flarego-agent
+
+######################## 2. Final image #######################################
+FROM gcr.io/distroless/static-debian11 AS final
+
+LABEL org.opencontainers.image.source="https://github.com/Voskan/flarego"
+LABEL org.opencontainers.image.title="FlareGo Agent"
+LABEL org.opencontainers.image.version="$VERSION"
+LABEL org.opencontainers.image.revision="$COMMIT"
+
+# Copy CA certs (already in distroless) and agent binary.
+COPY --from=builder /out/flarego-agent /usr/bin/flarego-agent
+
+USER nonroot:nonroot
+ENTRYPOINT ["/usr/bin/flarego-agent"]

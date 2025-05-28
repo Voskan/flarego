@@ -1,0 +1,66 @@
+# build/Dockerfile.gateway
+# -----------------------------------------------------------------------------
+# Multi‑stage Dockerfile that produces the standalone **FlareGo Gateway** image
+# with embedded web dashboard assets.  The end result is a small distroless
+# image (~35 MB) containing:
+#   • /usr/bin/flarego-gateway  – static Go binary
+#   • /ui                       – Vite‑built React dashboard (served by gateway)
+#
+# Build args recognised by this Dockerfile:
+#   VERSION   – semantic version string (default "dev")
+#   COMMIT    – git short hash (default "unknown")
+#   DATE      – RFC‑3339 build timestamp
+#
+# Example build:
+#   docker build -f build/Dockerfile.gateway -t flarego/gateway:latest \
+#         --build-arg VERSION=$(git describe --tags) \
+#         --build-arg COMMIT=$(git rev-parse --short HEAD) \
+#         --build-arg DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") .
+# -----------------------------------------------------------------------------
+
+######################## 1. Go builder ########################################
+FROM golang:1.24-alpine AS gobuild
+
+ARG VERSION=dev
+ARG COMMIT=unknown
+ARG DATE=unknown
+
+RUN apk add --no-cache git ca-certificates
+WORKDIR /src
+
+# Copy go module files first for better layer caching
+COPY go.* ./
+RUN go mod download
+
+# Copy full source
+COPY . .
+
+ENV CGO_ENABLED=0
+RUN go build -v -trimpath -o /out/flarego-gateway \
+    -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" \
+    ./cmd/flarego-gateway
+
+######################## 2. UI builder ########################################
+FROM node:20-alpine AS uibuild
+WORKDIR /ui-src
+
+COPY web/package*.json ./
+RUN npm ci --silent
+COPY web .
+RUN npm run build
+
+######################## 3. Final distroless image #############################
+FROM gcr.io/distroless/static-debian11 AS gateway
+
+LABEL org.opencontainers.image.source="https://github.com/Voskan/flarego"
+LABEL org.opencontainers.image.title="FlareGo Gateway"
+LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.revision=$COMMIT
+
+# /usr/bin – binary; /ui – static assets served at http://<host>/
+COPY --from=gobuild /out/flarego-gateway /usr/bin/flarego-gateway
+COPY --from=uibuild /ui-src/dist /ui
+
+EXPOSE 4317 8080
+USER nonroot:nonroot
+ENTRYPOINT ["/usr/bin/flarego-gateway"]
