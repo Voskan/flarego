@@ -12,6 +12,8 @@ builds:
     goarch:
       - arm64
       - arm
+    env:
+      - GOARM=7
   - id: flarego-agent
     main: ./cmd/flarego-agent/main.go
     binary: flarego-agent
@@ -19,8 +21,8 @@ builds:
     main: ./cmd/flarego-gateway/main.go
     binary: flarego-gateway
 
-archives:
-  - id: default
-    builds: [flarego, flarego-agent, flarego-gateway]
+artifacts:
+  builds:
+    ids: [flarego, flarego-agent, flarego-gateway]
     format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
