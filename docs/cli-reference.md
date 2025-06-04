@@ -1,225 +1,203 @@
 # FlareGo CLI Reference
 
-## Overview
+This document provides a comprehensive reference for all FlareGo CLI commands and their options.
 
-The `flarego` CLI provides commands for capturing, recording, and replaying Go runtime scheduler flame graphs.
+## Global Options
 
-## Installation
+These options are available for all commands:
 
-```bash
-# Build from source
-make build
-
-# Or download from releases
-wget https://github.com/Voskan/flarego/releases/latest/download/flarego_linux_amd64.tar.gz
-```
+- `--config string` - Path to configuration file (YAML/TOML/JSON)
+- `--log-json` - Enable JSON log output (default is human-friendly console)
 
 ## Commands
 
-### `flarego attach`
+### attach
 
-Attach to a running Go process and stream samples to a gateway.
+Starts a local agent and streams samples to a FlareGo gateway.
 
 ```bash
 flarego attach [flags]
 ```
 
-**Flags:**
+#### Options
 
-- `--gateway string` - FlareGo gateway gRPC address (default "localhost:4317")
-- `--hz int` - Sampling frequency in Hz (default 100)
-- `--duration duration` - Optional run time (0 = run until Ctrl-C)
+- `--gateway string` - FlareGo gateway gRPC address (host:port) (default "localhost:4317")
+- `--hz int` - Sampling frequency in Hz (1-10000) (default 100)
+- `--duration duration` - Optional run time (e.g., 30s); 0 = run until Ctrl-C
 
-**Examples:**
+#### Example
 
 ```bash
-# Attach to current process and stream to local gateway
-flarego attach
+# Attach to local gateway for 30 seconds
+flarego attach --gateway localhost:4317 --duration 30s
 
-# Attach with custom gateway and higher frequency
-flarego attach --gateway prod-gateway:4317 --hz 500
-
-# Attach for a specific duration
-flarego attach --duration 30s
+# Attach with custom sampling rate
+flarego attach --hz 500 --gateway localhost:4317
 ```
 
-### `flarego record`
+### record
 
-Record a local flame graph snapshot to a .fgo file.
+Records a local flame graph snapshot to a .fgo file.
 
 ```bash
 flarego record [flags]
 ```
 
-**Flags:**
+#### Options
 
-- `--duration, -d duration` - Recording duration (default 30s)
-- `--output, -o string` - Output .fgo file path (default auto-named)
+- `-d, --duration duration` - Recording duration (e.g., 30s, 2m) (default 30s)
+- `-o, --output string` - Output .fgo file path (default auto-named)
 - `--hz int` - Sampling frequency in Hz (default 100)
 - `--no-compress` - Disable gzip compression of output file
 
-**Examples:**
+#### Example
 
 ```bash
-# Record for 30 seconds
-flarego record --duration 30s
+# Record for 1 minute with default settings
+flarego record --duration 1m
 
-# Record to specific file
-flarego record --output my-trace.fgo --duration 60s
-
-# Record uncompressed
-flarego record --duration 10s --no-compress
+# Record with custom output file
+flarego record --output my-profile.fgo --duration 30s
 ```
 
-### `flarego replay`
+### replay
 
-Inspect a recorded .fgo flamegraph file.
+Inspects a recorded .fgo flamegraph file.
 
 ```bash
 flarego replay <file.fgo> [flags]
 ```
 
-**Flags:**
+#### Options
 
 - `--json` - Output full flamegraph JSON instead of summary
 
-**Examples:**
+#### Example
 
 ```bash
-# Show summary of recorded trace
-flarego replay trace.fgo
+# View flamegraph summary
+flarego replay my-profile.fgo
 
-# Output full JSON
-flarego replay trace.fgo --json
+# Get full JSON output
+flarego replay my-profile.fgo --json
 ```
 
-### `flarego version`
+### diff
 
-Print FlareGo version information.
+Shows the difference between two .fgo flamegraph files.
+
+```bash
+flarego diff <before.fgo> <after.fgo>
+```
+
+#### Example
+
+```bash
+# Compare two profiles
+flarego diff before.fgo after.fgo
+```
+
+### ebpf-attach
+
+Attaches to a running Go process using eBPF uprobes (Linux only).
+
+```bash
+flarego ebpf-attach <pid>
+```
+
+#### Example
+
+```bash
+# Attach to process with PID 1234
+flarego ebpf-attach 1234
+```
+
+### kubectl
+
+Port-forwards and attaches to a Kubernetes Pod.
+
+```bash
+flarego kubectl attach -n <namespace> <resource>
+```
+
+#### Example
+
+```bash
+# Attach to a pod in the default namespace
+flarego kubectl attach my-pod
+
+# Attach to a pod in a specific namespace
+flarego kubectl attach -n my-namespace my-pod
+```
+
+### version
+
+Prints FlareGo version information.
 
 ```bash
 flarego version [flags]
 ```
 
-**Flags:**
+#### Options
 
 - `--json` - Print version information as JSON
 
-**Examples:**
+#### Example
 
 ```bash
-# Human-readable version
+# Print version
 flarego version
 
-# JSON format
+# Get version as JSON
 flarego version --json
 ```
 
-## Global Flags
+## Configuration File
 
-- `--config string` - Path to configuration file (YAML/TOML/JSON)
-- `--log-json` - Enable JSON log output (default is human-friendly console)
+FlareGo supports configuration via YAML, TOML, or JSON files. The default location is `$HOME/.config/flarego/config.{yaml,toml,json}`.
 
-## Configuration
-
-FlareGo can be configured via:
-
-1. Command-line flags (highest priority)
-2. Environment variables with `FLAREGO_` prefix
-3. Configuration file
-4. Default values (lowest priority)
-
-### Environment Variables
-
-- `FLAREGO_GATEWAY` - Default gateway address
-- `FLAREGO_HZ` - Default sampling frequency
-- `FLAREGO_LOG_JSON` - Enable JSON logging
-
-### Configuration File
+Example configuration:
 
 ```yaml
-# ~/.config/flarego/config.yaml
-gateway: "localhost:4317"
+# Global settings
+gateway: localhost:4317
 hz: 100
 log_json: false
+
+# Command-specific settings
+attach:
+  duration: 30s
+  gateway: localhost:4317
+
+record:
+  duration: 30s
+  compress: true
 ```
 
-## Exit Codes
+## Environment Variables
 
-- `0` - Success
-- `1` - General error
-- `2` - Invalid arguments
-- `130` - Interrupted (Ctrl-C)
+All configuration options can be set via environment variables with the `FLAREGO_` prefix:
 
-## Examples
+- `FLAREGO_GATEWAY` - Gateway address
+- `FLAREGO_HZ` - Sampling frequency
+- `FLAREGO_LOG_JSON` - Enable JSON logging
 
-### Development Workflow
+## Output Formats
 
-```bash
-# Start local development environment
-make dev
+### Flame Graph (.fgo)
 
-# In another terminal, attach to a test process
-flarego attach --gateway localhost:4317
+The `.fgo` file format is a gzipped JSON representation of a flame graph. It contains:
 
-# Record a baseline before changes
-flarego record --duration 60s --output before.fgo
+- Stack traces
+- Timing information
+- Metadata
+- Optional compression
 
-# Make changes, then record again
-flarego record --duration 60s --output after.fgo
+### JSON Output
 
-# Compare (future feature)
-flarego diff before.fgo after.fgo
-```
+When using `--json` flag, the output is a structured JSON object containing:
 
-### Production Monitoring
-
-```bash
-# Monitor production service via gateway
-flarego attach --gateway prod.example.com:4317 --duration 5m
-
-# Save critical moments
-flarego record --duration 30s --output incident-$(date +%s).fgo
-```
-
-### CI/CD Integration
-
-```bash
-#!/bin/bash
-# Performance regression test
-flarego record --duration 30s --output ci-trace.fgo
-# Process trace and fail build if regression detected
-# (custom analysis script)
-```
-
-## Troubleshooting
-
-### Connection Issues
-
-```bash
-# Test gateway connectivity
-curl -v http://gateway:8080/metrics
-
-# Check agent logs
-flarego attach --log-json 2>&1 | jq
-```
-
-### Performance Issues
-
-```bash
-# Reduce sampling frequency
-flarego attach --hz 10
-
-# Record shorter durations
-flarego record --duration 5s
-```
-
-### File Format Issues
-
-```bash
-# Check if file is compressed
-file trace.fgo
-
-# Decompress manually if needed
-gunzip < trace.fgo.gz > trace.json
-```
+- Version information
+- Build metadata
+- Timestamps
+- Configuration details

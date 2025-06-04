@@ -15,10 +15,6 @@ import (
 )
 
 // SlackSink implements alerts.Sink for Slack.
-//
-// Example webhook URL format:
-//   https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
-//
 // The message field supports Slack's mrkdwn.
 type SlackSink struct {
     WebhookURL string
