@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for FlareGo dashboard */
+.flame-graph {
+  font-family: monospace;
+}
+
+.status-indicator {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* D3 flamegraph overrides */
+.d3-flame-graph {
+  background: #fafafa;
+}
+
+.d3-flame-graph .cell {
+  cursor: pointer;
+}
+
+.d3-flame-graph .cell:hover {
+  stroke: #333;
+  stroke-width: 2px;
+}

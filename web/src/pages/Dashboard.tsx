@@ -9,6 +9,8 @@ import { useTraceStream, ConnectionState } from "../hooks/useTraceStream";
 import { FlameGraphCanvas } from "../components/FlameGraphCanvas";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
+import { ReplayDrop } from "../components/ReplayDrop";
+import { DiffDrop } from "../components/DiffDrop";
 
 interface DashboardProps {
   defaultGatewayURL?: string;
@@ -26,6 +28,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
     name: string;
     value: number;
   } | null>(null);
+  const [offlineFrame, setOfflineFrame] = useState<any | null>(null);
+  const [filter, setFilter] = useState("");
+
+  React.useEffect(() => {
+    if (offlineFrame) setFilter("");
+  }, [offlineFrame]);
 
   const statusColor = (s: ConnectionState) => {
     switch (s) {
@@ -76,6 +84,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </CardContent>
         </Card>
 
+        <Card>
+          <CardContent className="p-4">
+            <ReplayDrop onLoad={setOfflineFrame} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <DiffDrop />
+          </CardContent>
+        </Card>
+
         {selectedNode && (
           <Card>
             <CardContent className="p-4 space-y-1">
@@ -93,10 +113,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Main flamegraph area */}
       <main className="col-span-9 flex flex-col">
-        {frame ? (
+        <div className="mb-2">
+          <input
+            className="p-2 border rounded w-1/2 text-sm"
+            placeholder="Search function/package..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
+        </div>
+        {offlineFrame ? (
+          <FlameGraphCanvas
+            data={offlineFrame}
+            height={600}
+            filter={filter}
+            onFilterChange={setFilter}
+            onNodeClick={(name, value) => setSelectedNode({ name, value })}
+          />
+        ) : frame ? (
           <FlameGraphCanvas
             data={frame}
             height={600}
+            filter={filter}
+            onFilterChange={setFilter}
             onNodeClick={(name, value) => setSelectedNode({ name, value })}
           />
         ) : (

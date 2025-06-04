@@ -33,12 +33,35 @@ FlareGo consists of three high‑level pieces:
 ```bash
 # Clone repo & start gateway + demo app
 $ git clone https://github.com/Voskan/flarego && cd flarego
+$ make setup  # Install dependencies and generate protobuf files
 $ docker compose -f deployments/docker-compose.yaml up -d
 
 # Point your browser at http://localhost:8080
 ```
 
 The demo runs `examples/basic` inside the compose network; the agent streams to `gateway:4317` and the dashboard auto‑connects.
+
+## 🛠️ Development Setup
+
+```bash
+# Prerequisites: Go 1.24+, Node.js 20+, Docker
+
+# 1. Setup development environment
+make setup
+
+# 2. Build all binaries
+make build
+
+# 3. Run tests
+make test
+
+# 4. Start local development (gateway + UI)
+make dev
+
+# 5. In another terminal, test CLI
+./bin/flarego record --duration 10s
+./bin/flarego replay flare-*.fgo
+```
 
 ---
 

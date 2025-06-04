@@ -11,7 +11,10 @@
 package main
 
 import (
+	"compress/gzip"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -51,11 +54,13 @@ func init() {
     rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Path to configuration file (YAML/TOML/JSON)")
     rootCmd.PersistentFlags().BoolVar(&logJSON, "log-json", false, "Enable JSON log output (default is human‑friendly console)")
 
-    // Add sub‑commands (defined in other files).
     rootCmd.AddCommand(newAttachCmd())
     rootCmd.AddCommand(newRecordCmd())
     rootCmd.AddCommand(newReplayCmd())
     rootCmd.AddCommand(newVersionCmd())
+    rootCmd.AddCommand(newDiffCmd())
+    rootCmd.AddCommand(newEBPFAttachCmd())
+    rootCmd.AddCommand(newKubectlCmd())
 }
 
 // Execute is called by main.main().
@@ -120,4 +125,49 @@ func mustDecodeFlame(path string) *flamegraph.Frame {
         logging.Sugar().Fatalw("decode", "err", err)
     }
     return &root
+}
+
+// flarego diff <before.fgo> <after.fgo>
+func newDiffCmd() *cobra.Command {
+    cmd := &cobra.Command{
+        Use:   "diff <before.fgo> <after.fgo>",
+        Short: "Show diff between two .fgo flamegraph files",
+        Args:  cobra.ExactArgs(2),
+        RunE: func(cmd *cobra.Command, args []string) error {
+            load := func(path string) (*flamegraph.Frame, error) {
+                f, err := os.Open(path)
+                if err != nil {
+                    return nil, err
+                }
+                defer f.Close()
+                var r io.Reader = f
+                if filepath.Ext(path) == ".fgo" {
+                    gr, err := gzip.NewReader(f)
+                    if err != nil {
+                        return nil, err
+                    }
+                    defer gr.Close()
+                    r = gr
+                }
+                var root flamegraph.Frame
+                if err := json.NewDecoder(r).Decode(&root); err != nil {
+                    return nil, err
+                }
+                return &root, nil
+            }
+            before, err := load(args[0])
+            if err != nil {
+                return err
+            }
+            after, err := load(args[1])
+            if err != nil {
+                return err
+            }
+            diff := flamegraph.Diff(after, before)
+            out, _ := json.MarshalIndent(diff, "", "  ")
+            fmt.Println(string(out))
+            return nil
+        },
+    }
+    return cmd
 }

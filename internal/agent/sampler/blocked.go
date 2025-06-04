@@ -2,15 +2,13 @@
 // BlockedSampler counts goroutines that are currently in a blocked state
 // (waiting on channel, mutex, select, etc.) and adds the count as a pseudo
 // sample to the flamegraph builder so the live flame graph shows a "Blocked"
-// sample to the flamegraph builder so the live flame graph shows a "Blocked"
 // band representing scheduler contention pressure.
 //
 // Counting strategy:
-//   - Use runtime.GoroutineProfile and inspect StackRecord.Inactive (bool)
-//     which indicates goroutine is not currently running.
-//   - This heuristic is coarse but fast and avoids parsing goroutine header
-//     strings.  For more fidelity we could parse stack traces, but that adds
-//     allocations; accept trade‑off for v0.1.
+//   - Use runtime.GoroutineProfile to get all goroutines
+//   - Count the total number of goroutines as a proxy for blocked count
+//   - This is a simplified approach; real implementation would parse stack
+//     traces to determine actual blocked states
 package sampler
 
 import (
@@ -68,24 +66,26 @@ func (s *BlockedSampler) loop() {
         case <-ticker.C:
             // Capture snapshot.
             for {
-                n, _ := runtime.GoroutineProfile(buf)
-                if n < len(buf) {
+                n, ok := runtime.GoroutineProfile(buf)
+                if ok {
                     buf = buf[:n]
                     break
                 }
-                buf = make([]runtime.StackRecord, n*2)
+                buf = make([]runtime.StackRecord, len(buf)*2)
             }
-            // Count inactive records.
+            
+            // Count goroutines with stacks (simplified blocked detection)
             var blocked int64
-            for _, rec := range buf {
-                if rec.Stack() == nil {
-                    continue // protective, though should not happen
-                }
-                // Consider goroutines in waiting state as blocked
-                if len(rec.Stack()) > 0 {
-                    blocked++
-                }
+            totalGoroutines := int64(runtime.NumGoroutine())
+            runningGoroutines := int64(len(buf))
+            
+            // Estimate blocked as total minus running
+            // This is a heuristic; real implementation would parse stack traces
+            blocked = totalGoroutines - runningGoroutines
+            if blocked < 0 {
+                blocked = 0
             }
+            
             if blocked > 0 {
                 s.builder.Add(flamegraph.Sample{
                     Stack:  []string{"(Blocked)"},

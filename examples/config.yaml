@@ -1,0 +1,58 @@
+# FlareGo Configuration Example
+# Place this file at ~/.config/flarego/config.yaml or specify with --config
+
+# Agent Settings
+agent:
+  sample_hz: 100
+  exclude_pkgs:
+    - "runtime"
+    - "net/http/pprof"
+    - "reflect"
+
+# Gateway Settings
+gateway:
+  listen_addr: ":4317"
+  http_listen: ":8080"
+  auth_token: "" # empty = no auth, or set FLAREGO_GW_AUTH_TOKEN
+  retention: "15m"
+  max_clients: 50
+
+# TLS Configuration (optional)
+tls:
+  cert_file: ""
+  key_file: ""
+
+# Alert Rules
+alerts:
+  - name: "high-blocked-goroutines"
+    expr: "blocked_goroutines > 150"
+    for: "5s"
+    sinks:
+      - "log"
+      # - "slack:https://hooks.slack.com/services/..."
+      # - "webhook:https://example.com/webhook"
+
+  - name: "high-heap-usage"
+    expr: "heap_bytes > 536870912" # 512MB
+    for: "10s"
+    sinks:
+      - "log"
+
+# UI Settings
+ui:
+  auto_refresh: true
+  refresh_interval: "1s"
+  max_history: 1000
+
+# Development Settings
+dev:
+  log_level: "info"
+  log_json: false
+  enable_pprof: true
+  pprof_addr: ":6060"
+
+# Redis Configuration (optional, for HA setups)
+redis:
+  addr: ""
+  password: ""
+  db: 0
