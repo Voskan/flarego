@@ -19,7 +19,15 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type { BinaryReadOptions, Empty, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
+import type {
+  BinaryReadOptions,
+  Empty,
+  FieldList,
+  JsonReadOptions,
+  JsonValue,
+  PartialMessage,
+  PlainMessage,
+} from "@bufbuild/protobuf";
 import { Message, proto3 } from "@bufbuild/protobuf";
 
 /**
@@ -66,13 +74,25 @@ export declare class AgentInfo extends Message<AgentInfo> {
   static readonly typeName = "agentpb.AgentInfo";
   static readonly fields: FieldList;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentInfo;
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): AgentInfo;
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentInfo;
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): AgentInfo;
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentInfo;
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): AgentInfo;
 
-  static equals(a: AgentInfo | PlainMessage<AgentInfo> | undefined, b: AgentInfo | PlainMessage<AgentInfo> | undefined): boolean;
+  static equals(
+    a: AgentInfo | PlainMessage<AgentInfo> | undefined,
+    b: AgentInfo | PlainMessage<AgentInfo> | undefined
+  ): boolean;
 }
 
 /**
@@ -109,13 +129,25 @@ export declare class Heartbeat extends Message<Heartbeat> {
   static readonly typeName = "agentpb.Heartbeat";
   static readonly fields: FieldList;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Heartbeat;
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): Heartbeat;
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Heartbeat;
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): Heartbeat;
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Heartbeat;
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): Heartbeat;
 
-  static equals(a: Heartbeat | PlainMessage<Heartbeat> | undefined, b: Heartbeat | PlainMessage<Heartbeat> | undefined): boolean;
+  static equals(
+    a: Heartbeat | PlainMessage<Heartbeat> | undefined,
+    b: Heartbeat | PlainMessage<Heartbeat> | undefined
+  ): boolean;
 }
 
 /**
@@ -127,19 +159,22 @@ export declare class ControlRequest extends Message<ControlRequest> {
   /**
    * @generated from oneof agentpb.ControlRequest.cmd
    */
-  cmd: {
-    /**
-     * @generated from field: agentpb.AdjustSamplingRate adjust_sampling = 1;
-     */
-    value: AdjustSamplingRate;
-    case: "adjustSampling";
-  } | {
-    /**
-     * @generated from field: agentpb.RequestSnapshot request_snapshot = 2;
-     */
-    value: RequestSnapshot;
-    case: "requestSnapshot";
-  } | { case: undefined; value?: undefined };
+  cmd:
+    | {
+        /**
+         * @generated from field: agentpb.AdjustSamplingRate adjust_sampling = 1;
+         */
+        value: AdjustSamplingRate;
+        case: "adjustSampling";
+      }
+    | {
+        /**
+         * @generated from field: agentpb.RequestSnapshot request_snapshot = 2;
+         */
+        value: RequestSnapshot;
+        case: "requestSnapshot";
+      }
+    | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<ControlRequest>);
 
@@ -147,13 +182,25 @@ export declare class ControlRequest extends Message<ControlRequest> {
   static readonly typeName = "agentpb.ControlRequest";
   static readonly fields: FieldList;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ControlRequest;
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): ControlRequest;
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ControlRequest;
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): ControlRequest;
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ControlRequest;
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): ControlRequest;
 
-  static equals(a: ControlRequest | PlainMessage<ControlRequest> | undefined, b: ControlRequest | PlainMessage<ControlRequest> | undefined): boolean;
+  static equals(
+    a: ControlRequest | PlainMessage<ControlRequest> | undefined,
+    b: ControlRequest | PlainMessage<ControlRequest> | undefined
+  ): boolean;
 }
 
 /**
@@ -171,18 +218,30 @@ export declare class AdjustSamplingRate extends Message<AdjustSamplingRate> {
   static readonly typeName = "agentpb.AdjustSamplingRate";
   static readonly fields: FieldList;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AdjustSamplingRate;
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): AdjustSamplingRate;
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AdjustSamplingRate;
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): AdjustSamplingRate;
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AdjustSamplingRate;
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): AdjustSamplingRate;
 
-  static equals(a: AdjustSamplingRate | PlainMessage<AdjustSamplingRate> | undefined, b: AdjustSamplingRate | PlainMessage<AdjustSamplingRate> | undefined): boolean;
+  static equals(
+    a: AdjustSamplingRate | PlainMessage<AdjustSamplingRate> | undefined,
+    b: AdjustSamplingRate | PlainMessage<AdjustSamplingRate> | undefined
+  ): boolean;
 }
 
 /**
  * RequestSnapshot asks the agent to immediately send a flamegraph chunk (e.g.,
- * for UI “Refresh now” button).
+ * for UI "Refresh now" button).
  *
  * @generated from message agentpb.RequestSnapshot
  */
@@ -190,7 +249,7 @@ export declare class RequestSnapshot extends Message<RequestSnapshot> {
   /**
    * @generated from field: google.protobuf.Empty _ = 1;
    */
-  ?: Empty;
+  _?: Empty;
 
   constructor(data?: PartialMessage<RequestSnapshot>);
 
@@ -198,13 +257,25 @@ export declare class RequestSnapshot extends Message<RequestSnapshot> {
   static readonly typeName = "agentpb.RequestSnapshot";
   static readonly fields: FieldList;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RequestSnapshot;
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): RequestSnapshot;
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RequestSnapshot;
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): RequestSnapshot;
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RequestSnapshot;
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): RequestSnapshot;
 
-  static equals(a: RequestSnapshot | PlainMessage<RequestSnapshot> | undefined, b: RequestSnapshot | PlainMessage<RequestSnapshot> | undefined): boolean;
+  static equals(
+    a: RequestSnapshot | PlainMessage<RequestSnapshot> | undefined,
+    b: RequestSnapshot | PlainMessage<RequestSnapshot> | undefined
+  ): boolean;
 }
 
 /**
@@ -231,13 +302,25 @@ export declare class ControlResponse extends Message<ControlResponse> {
   static readonly typeName = "agentpb.ControlResponse";
   static readonly fields: FieldList;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ControlResponse;
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): ControlResponse;
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ControlResponse;
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): ControlResponse;
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ControlResponse;
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): ControlResponse;
 
-  static equals(a: ControlResponse | PlainMessage<ControlResponse> | undefined, b: ControlResponse | PlainMessage<ControlResponse> | undefined): boolean;
+  static equals(
+    a: ControlResponse | PlainMessage<ControlResponse> | undefined,
+    b: ControlResponse | PlainMessage<ControlResponse> | undefined
+  ): boolean;
 }
 
 /**
@@ -250,25 +333,29 @@ export declare class AgentEnvelope extends Message<AgentEnvelope> {
   /**
    * @generated from oneof agentpb.AgentEnvelope.msg
    */
-  msg: {
-    /**
-     * @generated from field: agentpb.AgentInfo info = 1;
-     */
-    value: AgentInfo;
-    case: "info";
-  } | {
-    /**
-     * @generated from field: agentpb.Heartbeat heartbeat = 2;
-     */
-    value: Heartbeat;
-    case: "heartbeat";
-  } | {
-    /**
-     * @generated from field: agentpb.ControlResponse ack = 3;
-     */
-    value: ControlResponse;
-    case: "ack";
-  } | { case: undefined; value?: undefined };
+  msg:
+    | {
+        /**
+         * @generated from field: agentpb.AgentInfo info = 1;
+         */
+        value: AgentInfo;
+        case: "info";
+      }
+    | {
+        /**
+         * @generated from field: agentpb.Heartbeat heartbeat = 2;
+         */
+        value: Heartbeat;
+        case: "heartbeat";
+      }
+    | {
+        /**
+         * @generated from field: agentpb.ControlResponse ack = 3;
+         */
+        value: ControlResponse;
+        case: "ack";
+      }
+    | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<AgentEnvelope>);
 
@@ -276,12 +363,23 @@ export declare class AgentEnvelope extends Message<AgentEnvelope> {
   static readonly typeName = "agentpb.AgentEnvelope";
   static readonly fields: FieldList;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentEnvelope;
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>
+  ): AgentEnvelope;
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentEnvelope;
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>
+  ): AgentEnvelope;
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentEnvelope;
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>
+  ): AgentEnvelope;
 
-  static equals(a: AgentEnvelope | PlainMessage<AgentEnvelope> | undefined, b: AgentEnvelope | PlainMessage<AgentEnvelope> | undefined): boolean;
+  static equals(
+    a: AgentEnvelope | PlainMessage<AgentEnvelope> | undefined,
+    b: AgentEnvelope | PlainMessage<AgentEnvelope> | undefined
+  ): boolean;
 }
-
