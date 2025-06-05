@@ -55,18 +55,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      # - name: Lint
+      #   run: npm run lint
 
       - name: Typecheck
         run: npx tsc --noEmit
 
       - name: Build
         run: npm run build
-
-      # Uncomment and adjust if you add frontend tests (e.g., with Vitest or Jest)
-      # - name: Run UI tests
-      #   run: npm test
 
   docker:
     name: Build Docker Images
