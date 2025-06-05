@@ -242,6 +242,77 @@ flarego attach --duration 1h | while read line; do
 done
 ```
 
+## Web Interface
+
+### Running the Web UI
+
+The FlareGo web interface provides real-time visualization of your application's performance data. There are several ways to run it:
+
+1. **Development Mode**
+
+   ```bash
+   # Start the development environment
+   make dev
+   ```
+
+   This will:
+
+   - Start the FlareGo gateway
+   - Launch the web UI in development mode
+   - Enable hot-reloading for development
+
+2. **Production Mode**
+
+   ```bash
+   # Build the web UI
+   cd web && npm run build
+
+   # Start the gateway with web UI
+   ./bin/flarego-gateway
+   ```
+
+3. **Docker**
+   ```bash
+   # Run using Docker Compose
+   docker compose -f deployments/docker-compose.yaml up -d
+   ```
+
+### Accessing the Web UI
+
+Once running, the web interface is available at:
+
+- Development: `http://localhost:3000`
+- Production: `http://localhost:8080`
+
+### Web UI Features
+
+1. **Real-time Visualization**
+
+   - Live flame graphs
+   - Timeline view
+   - Metrics dashboard
+
+2. **Interactive Analysis**
+
+   - Zoom and pan
+   - Stack trace inspection
+   - Metric correlation
+
+3. **Alert Management**
+   - View active alerts
+   - Configure alert rules
+   - Set up notifications
+
+### Stopping the Web UI
+
+```bash
+# Stop development environment
+make stop-dev
+
+# Or using Docker Compose
+docker compose -f deployments/docker-compose.yaml down
+```
+
 ## Next Steps
 
 - Read the [CLI Reference](cli-reference.md) for detailed command options

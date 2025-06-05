@@ -10,7 +10,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { FlamegraphChunk } from "./gateway_pbts";
+import { FlamegraphChunk } from "./common_pbts";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**

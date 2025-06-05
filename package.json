@@ -1,0 +1,20 @@
+{
+  "name": "flarego",
+  "version": "1.0.0",
+  "description": "> **Live scheduler flame‑visualiser for Go 1.19+** – sample goroutines, GC, heap, blocked states in real time and explore the data through an embeddable React dashboard.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@bufbuild/protoc-gen-connect-es": "^0.13.0",
+    "@bufbuild/protoc-gen-es": "^1.10.1"
+  }
+}

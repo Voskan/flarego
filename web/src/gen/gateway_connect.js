@@ -10,7 +10,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { FlamegraphChunk } from "./gateway_pb";
+import { FlamegraphChunk } from "./common_pbts";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -33,5 +33,6 @@ export const GatewayService = {
       O: Empty,
       kind: MethodKind.ClientStreaming,
     },
-  },
+  }
 };
+

@@ -12,13 +12,7 @@ package agentpb;
 option go_package = "github.com/Voskan/flarego/internal/proto;agentpb";
 
 import "google/protobuf/empty.proto";
-
-// FlamegraphChunk carries one compressed or plain JSON blob produced by the
-// agent's flamegraph.Builder.  Compression (gzip, zstd) is negotiated via the
-// gRPC 'content‑encoding' header – transparent to this schema.
-message FlamegraphChunk {
-  bytes payload = 1;
-}
+import "common.proto";
 
 // GatewayService is implemented by the gateway; agents establish a
 // bidirectional stream so the server can send control messages in future (e.g.

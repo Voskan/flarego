@@ -1,0 +1,15 @@
+// internal/proto/common.proto
+// Common message definitions shared between FlareGo services.
+
+syntax = "proto3";
+
+package agentpb;
+
+option go_package = "github.com/Voskan/flarego/internal/proto;agentpb";
+
+// FlamegraphChunk carries one compressed or plain JSON blob produced by the
+// agent's flamegraph.Builder.  Compression (gzip, zstd) is negotiated via the
+// gRPC 'content‑encoding' header – transparent to this schema.
+message FlamegraphChunk {
+  bytes payload = 1;
+} 

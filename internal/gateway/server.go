@@ -21,6 +21,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Config parameterises a Gateway Server.
@@ -39,6 +40,7 @@ type Config struct {
 // Store for replay.
 type Server struct {
     agentpb.UnimplementedGatewayServiceServer
+    agentpb.UnimplementedUIServiceServer
 
     cfg     Config
     store   retention.Store
@@ -63,9 +65,48 @@ func New(cfg Config) (*Server, error) {
     if cfg.TLSConfig != nil {
         opts = append(opts, grpc.Creds(credentials.NewTLS(cfg.TLSConfig)))
     }
+
+    // Add CORS interceptor
+    opts = append(opts, grpc.ChainUnaryInterceptor(
+        func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+            md, ok := metadata.FromIncomingContext(ctx)
+            if ok {
+                md.Set("Access-Control-Allow-Origin", "*")
+                md.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+                md.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+                ctx = metadata.NewOutgoingContext(ctx, md)
+            }
+            return handler(ctx, req)
+        },
+    ))
+    opts = append(opts, grpc.ChainStreamInterceptor(
+        func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+            ctx := ss.Context()
+            md, ok := metadata.FromIncomingContext(ctx)
+            if ok {
+                md.Set("Access-Control-Allow-Origin", "*")
+                md.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+                md.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+                ctx = metadata.NewOutgoingContext(ctx, md)
+            }
+            return handler(srv, &wrappedServerStream{ServerStream: ss, ctx: ctx})
+        },
+    ))
+
     s.grpcSrv = grpc.NewServer(opts...)
     agentpb.RegisterGatewayServiceServer(s.grpcSrv, s)
+    agentpb.RegisterUIServiceServer(s.grpcSrv, s)
     return s, nil
+}
+
+// wrappedServerStream wraps grpc.ServerStream to override Context()
+type wrappedServerStream struct {
+    grpc.ServerStream
+    ctx context.Context
+}
+
+func (w *wrappedServerStream) Context() context.Context {
+    return w.ctx
 }
 
 // ListenAndServe blocks, serving the gRPC API until ctx is cancelled.
@@ -115,6 +156,52 @@ func (s *Server) Stream(stream agentpb.GatewayService_StreamServer) error {
     }
 }
 
+// StreamFlamegraphs is the UI service endpoint that streams flamegraph chunks to clients.
+func (s *Server) StreamFlamegraphs(req *emptypb.Empty, stream agentpb.UIService_StreamFlamegraphsServer) error {
+    // Optional bearer‑token auth.
+    if s.cfg.AuthToken != "" {
+        md, ok := metadata.FromIncomingContext(stream.Context())
+        if !ok || len(md.Get("authorization")) == 0 {
+            return status.Error(codes.Unauthenticated, "missing auth token")
+        }
+        tok := md.Get("authorization")[0]
+        expected := "Bearer " + s.cfg.AuthToken
+        if tok != expected {
+            return status.Error(codes.PermissionDenied, "invalid auth token")
+        }
+    }
+
+    // Create a channel for this subscriber.
+    ch := make(chan []byte, 100) // buffered to avoid blocking the gateway
+    s.subsMu.Lock()
+    s.subs[ch] = struct{}{}
+    s.subsMu.Unlock()
+
+    // Clean up when the client disconnects.
+    defer func() {
+        s.subsMu.Lock()
+        delete(s.subs, ch)
+        s.subsMu.Unlock()
+        close(ch)
+    }()
+
+    // Send initial data from retention store.
+    for _, data := range s.store.ReadAll() {
+        if err := stream.Send(&agentpb.FlamegraphChunk{Payload: data}); err != nil {
+            return err
+        }
+    }
+
+    // Stream new chunks until client disconnects.
+    for data := range ch {
+        if err := stream.Send(&agentpb.FlamegraphChunk{Payload: data}); err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
+
 // handleChunk writes to store and broadcasts to subscribers.
 func (s *Server) handleChunk(data []byte) {
     // Persist in ring buffer.
@@ -137,32 +224,19 @@ func (s *Server) handleChunk(data []byte) {
 
 // Subscribe registers a UI client.  The caller must drain the returned channel
 // and invoke the unregister func when done.
-func (s *Server) Subscribe() (<-chan []byte, func()) {
-    ch := make(chan []byte, 256)
-
+func (s *Server) Subscribe() (ch chan []byte, unregister func()) {
+    ch = make(chan []byte, 100) // buffered to avoid blocking the gateway
     s.subsMu.Lock()
-    if s.cfg.MaxClients > 0 && len(s.subs) >= s.cfg.MaxClients {
-        s.subsMu.Unlock()
-        close(ch)
-        return ch, func() {} // immediately closed
-    }
     s.subs[ch] = struct{}{}
     s.subsMu.Unlock()
 
-    // Send history for immediate context.
-    hist := s.store.ReadAll()
-    go func() {
-        for _, buf := range hist {
-            ch <- buf
-        }
-    }()
-
-    unregister := func() {
+    unregister = func() {
         s.subsMu.Lock()
         delete(s.subs, ch)
         s.subsMu.Unlock()
         close(ch)
     }
+
     return ch, unregister
 }
 

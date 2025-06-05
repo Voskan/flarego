@@ -13,9 +13,9 @@
 
 import { createConnectTransport } from "@bufbuild/connect-web";
 import { createPromiseClient } from "@bufbuild/connect";
-import { GatewayService } from "../gen/gateway_connect";
-import { FlamegraphChunk } from "../gen/gateway_pb";
 import { Empty } from "@bufbuild/protobuf";
+import { UIService } from "../gen/ui_connect";
+import { FlamegraphChunk } from "../gen/gateway_pb";
 
 interface ClientOptions {
   gatewayURL: string; // e.g., "https://localhost:4317"
@@ -23,7 +23,7 @@ interface ClientOptions {
 }
 
 export class FlareGoClient {
-  private client: ReturnType<typeof createPromiseClient<typeof GatewayService>>;
+  private client: ReturnType<typeof createPromiseClient<typeof UIService>>;
 
   constructor(private opts: ClientOptions) {
     const transport = createConnectTransport({
@@ -38,18 +38,24 @@ export class FlareGoClient {
         },
       ],
     });
-    this.client = createPromiseClient(GatewayService, transport);
+    this.client = createPromiseClient(UIService, transport);
   }
 
   /**
    * streamFlamegraphs yields Uint8Array payloads as they arrive from the
    * gateway.  The caller converts each to string/JSON as needed.
    */
-  async streamFlamegraphs(): Promise<void> {
-    async function* emptyStream() {
-      yield new FlamegraphChunk({ payload: new Uint8Array([1, 2, 3]) }); // your data here
+  async *streamFlamegraphs(): AsyncGenerator<Uint8Array> {
+    try {
+      const response = await this.client.streamFlamegraphs(new Empty());
+      for await (const chunk of response as AsyncIterable<FlamegraphChunk>) {
+        if (chunk.payload) {
+          yield chunk.payload;
+        }
+      }
+    } catch (err) {
+      console.error("Error streaming flamegraphs:", err);
+      throw err;
     }
-    await this.client.stream(emptyStream());
-    // No data to receive from server; server returns a single Empty
   }
 }

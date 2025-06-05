@@ -1,0 +1,19 @@
+// internal/proto/ui.proto
+// This schema defines the gRPC contract between the FlareGo gateway and the UI.
+// The protocol is designed for real-time streaming of flamegraph data to the UI.
+
+syntax = "proto3";
+
+package agentpb;
+
+option go_package = "github.com/Voskan/flarego/internal/proto;agentpb";
+
+import "google/protobuf/empty.proto";
+import "common.proto";
+
+// UIService is implemented by the gateway; the UI connects to stream
+// flamegraph data in real-time.
+service UIService {
+  // StreamFlamegraphs streams flamegraph data to the UI.
+  rpc StreamFlamegraphs(google.protobuf.Empty) returns (stream FlamegraphChunk);
+} 

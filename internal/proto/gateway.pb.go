@@ -18,7 +18,6 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
-	sync "sync"
 	unsafe "unsafe"
 )
 
@@ -29,76 +28,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// FlamegraphChunk carries one compressed or plain JSON blob produced by the
-// agent's flamegraph.Builder.  Compression (gzip, zstd) is negotiated via the
-// gRPC 'content‑encoding' header – transparent to this schema.
-type FlamegraphChunk struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Payload       []byte                 `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *FlamegraphChunk) Reset() {
-	*x = FlamegraphChunk{}
-	mi := &file_gateway_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FlamegraphChunk) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FlamegraphChunk) ProtoMessage() {}
-
-func (x *FlamegraphChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FlamegraphChunk.ProtoReflect.Descriptor instead.
-func (*FlamegraphChunk) Descriptor() ([]byte, []int) {
-	return file_gateway_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *FlamegraphChunk) GetPayload() []byte {
-	if x != nil {
-		return x.Payload
-	}
-	return nil
-}
-
 var File_gateway_proto protoreflect.FileDescriptor
 
 const file_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\rgateway.proto\x12\aagentpb\x1a\x1bgoogle/protobuf/empty.proto\"+\n" +
-	"\x0fFlamegraphChunk\x12\x18\n" +
-	"\apayload\x18\x01 \x01(\fR\apayload2N\n" +
+	"\rgateway.proto\x12\aagentpb\x1a\x1bgoogle/protobuf/empty.proto\x1a\fcommon.proto2N\n" +
 	"\x0eGatewayService\x12<\n" +
 	"\x06Stream\x12\x18.agentpb.FlamegraphChunk\x1a\x16.google.protobuf.Empty(\x01B2Z0github.com/Voskan/flarego/internal/proto;agentpbb\x06proto3"
 
-var (
-	file_gateway_proto_rawDescOnce sync.Once
-	file_gateway_proto_rawDescData []byte
-)
-
-func file_gateway_proto_rawDescGZIP() []byte {
-	file_gateway_proto_rawDescOnce.Do(func() {
-		file_gateway_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_gateway_proto_rawDesc), len(file_gateway_proto_rawDesc)))
-	})
-	return file_gateway_proto_rawDescData
-}
-
-var file_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_gateway_proto_goTypes = []any{
 	(*FlamegraphChunk)(nil), // 0: agentpb.FlamegraphChunk
 	(*emptypb.Empty)(nil),   // 1: google.protobuf.Empty
@@ -118,19 +55,19 @@ func file_gateway_proto_init() {
 	if File_gateway_proto != nil {
 		return
 	}
+	file_common_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gateway_proto_rawDesc), len(file_gateway_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_gateway_proto_goTypes,
 		DependencyIndexes: file_gateway_proto_depIdxs,
-		MessageInfos:      file_gateway_proto_msgTypes,
 	}.Build()
 	File_gateway_proto = out.File
 	file_gateway_proto_goTypes = nil
